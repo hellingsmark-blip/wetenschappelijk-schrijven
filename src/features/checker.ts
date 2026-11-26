@@ -66,6 +66,17 @@ export interface CheckerHooks {
   onChange: () => void;
   onMessage: (text: string, kind: "" | "ok" | "err") => void;
   onFocus: (key: string) => void;
+  /** Klik op een AI-check-markering. */
+  onAiFocus?: (key: string) => void;
+}
+
+/** Eén kronkel: van een bevinding of van de AI-check. */
+export interface Mark {
+  key: string;
+  start: number;
+  length: number;
+  color: Color;
+  suggestion?: string;
 }
 
 const CONCURRENCY = 3;
@@ -90,6 +101,7 @@ export class Checker {
   private inFlight = new Set<string>();
   private queue: { kind: CheckKind; text: string; index: number; force: boolean }[] = [];
   private quantInput: { text: string; section: string | null; skip: boolean }[] = [];
+  private aiMarks = new Map<string, Mark[]>();
   private dismissed = new Set<string>();
   private critSig = new Map<number, string>();
   private annToKey = new Map<string, string>();
@@ -105,7 +117,8 @@ export class Checker {
     await registerAnnotationEvents(
       (id) => {
         const k = this.annToKey.get(id);
-        if (k) this.h.onFocus(k);
+        if (k?.startsWith("ai:")) this.h.onAiFocus?.(k);
+        else if (k) this.h.onFocus(k);
       },
       (id, action, suggestion) => void this.onPopupAction(id, action, suggestion)
     );
@@ -332,15 +345,26 @@ export class Checker {
     const updates: ParagraphCritiques[] = [];
     const keysPerPara = new Map<number, string[]>();
     this.paras.forEach((p, i) => {
-      const list = per.get(i) || [];
-      // Kronkels mogen elkaar niet overlappen; de eerste wint (de rest staat wel in het zijpaneel).
-      const chosen: Finding[] = [];
-      let end = -1;
-      for (const f of list) {
-        if (f.start < end || f.start + f.length > p.text.length || f.length <= 0) continue;
-        chosen.push(f);
-        end = f.start + f.length;
+      // AI-check-markeringen (als die aanstaan) gaan voor; daarna de schrijfsuggesties.
+      // Kronkels mogen elkaar niet overlappen; de rest staat wel in het zijpaneel.
+      const candidates: Mark[] = [
+        ...(this.aiMarks.get(p.text) || []),
+        ...(per.get(i) || []).map((f) => ({
+          key: f.key,
+          start: f.start,
+          length: f.length,
+          color: SQUIGGLE[f.category],
+          // Notatie past opmaak toe; die kan de pop-up niet tonen, dus daar geen suggestie.
+          suggestion: f.source === "live" && f.replacement ? f.replacement : undefined,
+        })),
+      ];
+      const chosen: Mark[] = [];
+      for (const m of candidates) {
+        if (m.length <= 0 || m.start + m.length > p.text.length) continue;
+        if (chosen.some((c) => m.start < c.start + c.length && c.start < m.start + m.length)) continue;
+        chosen.push(m);
       }
+      chosen.sort((a, b) => a.start - b.start);
       const sig = p.text + "\u0000" + chosen.map((f) => f.key).join("|");
       if (this.critSig.get(i) === sig) return;
       if (!chosen.length && !this.critSig.has(i)) {
@@ -351,13 +375,7 @@ export class Checker {
       updates.push({
         index: i,
         text: p.text,
-        critiques: chosen.map((f) => ({
-          start: f.start,
-          length: f.length,
-          color: SQUIGGLE[f.category],
-          // Notatie past opmaak toe; die kan de pop-up niet tonen, dus daar geen suggestie.
-          suggestion: f.source === "live" && f.replacement ? f.replacement : undefined,
-        })),
+        critiques: chosen.map((m) => ({ start: m.start, length: m.length, color: m.color, suggestion: m.suggestion })),
       });
       keysPerPara.set(i, chosen.map((f) => f.key));
     });
@@ -489,6 +507,15 @@ export class Checker {
       for (const kind of this.kinds()) this.forced.set(jobKey(kind, t), bypassCache);
     });
     if (!bypassCache) this.checkedTexts.clear();
+    void this.run();
+  }
+
+  /**
+   * Markeringen van de AI-check (per alineatekst). Leeg = geen markeringen.
+   * Sleutels beginnen met "ai:", zodat een klik op zo'n kronkel naar het tabblad AI-check gaat.
+   */
+  setAiMarks(marks: Map<string, Mark[]>): void {
+    this.aiMarks = marks;
     void this.run();
   }
 

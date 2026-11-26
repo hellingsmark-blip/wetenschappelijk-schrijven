@@ -113,7 +113,26 @@
     </section>
 
     <section id="tab-aicheck" class="panel">
-      <p class="empty">De AI-check komt in fase 8 (na het detectorproject).</p>
+      <div class="row">
+        <label class="toggle"><input type="radio" name="detMode" value="local" /> Lokaal</label>
+        <label class="toggle"><input type="radio" name="detMode" value="cloud" /> Cloud</label>
+        <button id="detPing" class="link">Verbinding testen</button>
+      </div>
+      <p id="detStatus" class="msg muted"></p>
+      <div id="detHelp" class="muted hidden"></div>
+
+      <div class="row">
+        <button id="aiSel" class="primary">Analyseer selectie</button>
+        <button id="aiSec">Analyseer sectie</button>
+        <button id="aiDoc">Analyseer document</button>
+      </div>
+      <label class="toggle"><input type="checkbox" id="aiMark" /> Zinnen markeren in het document</label>
+      <div id="aiConfirm" class="confirm hidden">
+        <span id="aiConfirmText"></span>
+        <div class="row"><button id="aiConfirmYes" class="primary">Doorgaan</button><button id="aiConfirmNo">Annuleren</button></div>
+      </div>
+      <p id="aiMsg" class="msg"></p>
+      <div id="aiResult"></div>
     </section>
 
     <section id="tab-profiel" class="panel">
@@ -218,7 +237,20 @@
       <label class="toggle"><input type="checkbox" id="trackChanges" /> Wijzigingen als bijgehouden wijziging (track changes)</label>
 
       <h3>AI-detector</h3>
+      <div class="row">
+        <label class="toggle"><input type="radio" name="detModeSet" value="local" /> Lokaal</label>
+        <label class="toggle"><input type="radio" name="detModeSet" value="cloud" /> Cloud</label>
+      </div>
       <label class="field">Adres lokale detector <input id="detectorUrl" type="text" /></label>
+      <label class="field">Adres cloud-detector (Modal) <input id="cloudDetectorUrl" type="text" placeholder="https://…modal.run" /></label>
+      <label class="field">Toegangstoken cloud-detector
+        <input id="detTokenInput" type="password" autocomplete="off" spellcheck="false" />
+      </label>
+      <div class="row">
+        <button id="detTokenSave">Opslaan</button>
+        <button id="detTokenClear" class="link">Verwijder</button>
+      </div>
+      <p id="detMsg" class="msg muted">Tekst gaat alleen naar je eigen detector (localhost of je eigen …modal.run-adres). Het token blijft op deze computer.</p>
 
       <h3>Omgeving</h3>
       <p id="envInfo" class="muted"></p>

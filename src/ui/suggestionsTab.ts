@@ -4,7 +4,7 @@
  */
 import { formatEur } from "../budget";
 import { diffHtml, escapeHtml } from "../diff";
-import { Checker, Finding } from "../features/checker";
+import { Checker, Finding, Mark } from "../features/checker";
 import type { CheckKind } from "../features/liveCheck";
 import type { Segment } from "../notation/rules";
 import { activeProfile, addIgnore, removeIgnore } from "../profiles";
@@ -276,6 +276,15 @@ export function profileChanged(): void {
   checker.profileChanged();
 }
 
+/** Voor de AI-check: zinsmarkeringen in het document (lege map = weghalen) en klikken daarop. */
+let aiFocus: ((key: string) => void) | null = null;
+export function setAiMarks(marks: Map<string, Mark[]>): void {
+  checker.setAiMarks(marks);
+}
+export function onAiMarkClicked(fn: (key: string) => void): void {
+  aiFocus = fn;
+}
+
 /** Na het bewerken van het profiel: alles wat al gecontroleerd was vers opnieuw (kost tegoed). */
 export function recheckProfile(): void {
   renderIgnoreList();
@@ -295,6 +304,7 @@ export function initSuggestionsTab(ctx: Ctx): void {
     onChange: render,
     onMessage: sugStatus,
     onFocus: focusFinding,
+    onAiFocus: (k) => aiFocus?.(k),
   });
 
   $("scanBtn").addEventListener("click", async () => {

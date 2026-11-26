@@ -117,6 +117,23 @@ details.tool[open] summary { margin-bottom: 6px; }
 .ok-fg { color: var(--ok-fg); }
 .err-fg { color: var(--err-fg); }
 
+/* AI-check */
+.dot.on { background: var(--ok-fg); }
+.dot.off { background: var(--err-fg); }
+.meter { position: relative; height: 10px; border-radius: 5px; margin: 6px 0;
+  background: linear-gradient(90deg, #6ccb5f 0%, #e6c84f 50%, #e8665a 100%); }
+.meter .band { position: absolute; top: -2px; height: 14px; border: 2px solid var(--fg); border-radius: 6px; opacity: .55; }
+.meter .pin { position: absolute; top: -4px; width: 3px; height: 18px; background: var(--fg); }
+.ai-label { font-size: 15px; font-weight: 600; }
+.score { display: inline-block; min-width: 38px; text-align: center; border-radius: 8px; padding: 0 5px; font-size: 12px; font-weight: 600; color: #000; }
+.s-human { background: #bfe6b8; }
+.s-uncertain { background: #f3e1a0; }
+.s-ai { background: #f4b4ad; }
+.sent { padding: 2px 4px; border-radius: 3px; cursor: pointer; }
+.sent:hover { background: rgba(127, 127, 127, .1); }
+.signals { font-size: 12px; margin: 2px 0 4px 10px; }
+.item.ai-focus { outline: 2px solid var(--accent); }
+
 .banner { padding: 8px 10px; border-top: 1px solid var(--line); display: grid; gap: 6px; }
 .banner.warn { background: var(--warn-bg); color: var(--warn-fg); }
 .banner.blocked { background: var(--err-bg); color: var(--err-fg); }

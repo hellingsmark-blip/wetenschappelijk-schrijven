@@ -11,7 +11,7 @@ Sciences, WUR). Hij gebruikt de Claude API met **je eigen API key** en werkt met
 | **Suggesties** | Kronkels in je tekst + lijst per categorie: taal, stijl, claimsterkte, helderheid, consistentie (Haiku), technisch (Sonnet), notatie (lokaal, gratis). Per melding: **Toepassen**, **Waarom?**, **Negeer altijd**. |
 | **Parafraseer** | Selecteer ≥ 5 woorden → vier varianten (wetenschappelijker, formeler, beknopter, voorzichtiger) met **Vervang**. |
 | **Tools** | NL → wetenschappelijk Engels, sectie nakijken, begeleidersmodus, inkorten tot X woorden, figuren & tabellen, afkortingenlijst, termconsistentie. |
-| **AI-check** | (fase 8) koppeling met je lokale AI-detector. |
+| **AI-check** | Op knopdruk: selectie, sectie of document laten beoordelen door je eigen detector (lokaal of cloud), met terugval op een gratis lichte modus. Zie hieronder. |
 | **Profiel** | Profielen beheren, woordenlijst, afkortingen, feitenblad, negeerlijst, export/import. |
 | **⚙ Instellingen** | API key, modellen, budget, koers, aan/uit per categorie en functie, track changes. |
 
@@ -25,8 +25,8 @@ knop **Limiet deze maand verhogen**; op de 1e van de maand weer € 15).
 - Je **API key** staat alleen in de lokale opslag van de add-in op je eigen computer. Niet in de code, niet op
   GitHub, niet in het manifest en niet in het Word-document.
 - In het Word-document wordt alleen de **naam** van het gekoppelde profiel opgeslagen.
-- De add-in praat alleen met de Claude API (`api.anthropic.com`) en — vanaf fase 8 — met je eigen detector op
-  `localhost`. Geen telemetrie, geen andere diensten.
+- De add-in praat alleen met de Claude API (`api.anthropic.com`) en met je **eigen** AI-detector
+  (`https://localhost:…` of je eigen `https://….modal.run`). Geen telemetrie, geen externe detectiediensten.
 - Er gaat alleen tekst naar Claude als een functie dat nodig heeft (live controle van gewijzigde alinea's,
   parafraseren, tools). Notatie, figuren & tabellen en de afkortingenlijst werken volledig lokaal.
 
@@ -112,6 +112,20 @@ Neem je eigen werk mee:
 2. In de **definitieve versie**: **Profiel → Importeren** → kies het bestand (of plak de JSON) → **Importeer**.
 
 ---
+
+## AI-check
+
+- Knoppen **Analyseer selectie / sectie / document** (niet live). Resultaat: totaalscore met onzekerheidsmarge
+  (*waarschijnlijk menselijk / onzeker / waarschijnlijk AI*), lijst per alinea (klik = springen + zinnen tonen),
+  per zin welke signalen bijdroegen, en bij elk resultaat met welke modus en modellen het berekend is.
+- **Lokaal / Cloud** (op het tabblad en in ⚙ Instellingen → AI-detector):
+  - *Lokaal*: `https://localhost:8765` — start de detector met het startscript in de detectormap. Gratis.
+  - *Cloud*: je eigen Modal-endpoint (`https://….modal.run`) + toegangstoken (alleen lokaal opgeslagen).
+    Je ziet vooraf de geschatte kosten en "Cloud-detector wordt opgestart…" bij een koude start.
+- **Lichte modus** als er geen detector bereikbaar is: alleen stilometrie in de add-in, *indicatief, beperkte betrouwbaarheid*.
+- **Zinnen markeren in het document** (standaard uit): zinnen met een score ≥ 50 % krijgen een kronkel
+  (kleur *berry*; Word kent maar vijf kleuren, dus die deelt hij met Helderheid).
+- Telt niet mee in het Claude-budget. Het contract met de detector staat in [`docs/detector-api.md`](docs/detector-api.md).
 
 ## Instellingen en aanpassen
 

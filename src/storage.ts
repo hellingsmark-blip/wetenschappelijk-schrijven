@@ -77,3 +77,9 @@ const API_KEY = "apiKey";
 export const getApiKey = (): string => loadJSON<string>(API_KEY, "");
 export const setApiKey = (k: string): void => saveJSON(API_KEY, k.trim());
 export const clearApiKey = (): void => removeKey(API_KEY);
+
+// Toegangstoken van de eigen cloud-detector (Modal): zelfde regels als de API key.
+const DETECTOR_TOKEN = "detectorToken";
+export const getDetectorToken = (): string => loadJSON<string>(DETECTOR_TOKEN, "");
+export const setDetectorToken = (t: string): void => saveJSON(DETECTOR_TOKEN, t.trim());
+export const clearDetectorToken = (): void => removeKey(DETECTOR_TOKEN);

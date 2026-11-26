@@ -10,6 +10,7 @@ import { initParaphraseTab, setParaphraseToggle } from "../ui/paraphraseTab";
 import { initSuggestionsTab, profileChanged, recheckProfile, refreshSuggestions, resumeChecks } from "../ui/suggestionsTab";
 import { initProfileTab, renderProfileTab } from "../ui/profileTab";
 import { initToolsTab } from "../ui/toolsTab";
+import { initAiCheckTab } from "../ui/aiCheckTab";
 import {
   activeProfile, lastDocSaveResult, linkProfileToDocument, loadProfiles, profileForDocument, setActiveProfile,
 } from "../profiles";
@@ -183,10 +184,7 @@ function initSettings(): void {
   tc.checked = settings.trackChanges;
   tc.addEventListener("change", () => { settings.trackChanges = tc.checked; save(); });
 
-  const det = $<HTMLInputElement>("detectorUrl");
-  det.value = settings.detectorUrl;
-  det.addEventListener("change", () => { settings.detectorUrl = det.value.trim(); save(); });
-
+  // De instellingen van de AI-detector worden geregeld in ui/aiCheckTab.ts.
 }
 
 // ---------- Budget / kostenmeter ----------
@@ -257,6 +255,7 @@ function init(): void {
   initParaphraseTab({ settings: () => settings, save: () => saveSettings(settings), setStatus });
   initSuggestionsTab({ settings: () => settings, setStatus, showTab });
   initToolsTab({ settings: () => settings, setStatus, showTab, onProfileEdited: renderProfileTab });
+  initAiCheckTab({ settings: () => settings, save: () => saveSettings(settings), setStatus, showTab });
   renderKeyBadge();
   renderEnvInfo();
   if (!getApiKey()) showTab("instellingen");

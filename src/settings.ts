@@ -27,6 +27,12 @@ export interface Settings {
   usdToEur: number;
   trackChanges: boolean;
   detectorUrl: string;
+  /** AI-check: lokale detector of eigen cloud-detector (Modal). */
+  detectorMode: "local" | "cloud";
+  /** Adres van de eigen Modal-endpoint (https://….modal.run). Het token staat apart in storage.ts. */
+  cloudDetectorUrl: string;
+  /** AI-check: zinnen in het document markeren (standaard uit). */
+  aiMarkSentences: boolean;
   categories: Record<CategoryId, boolean>;
   features: Record<FeatureId, boolean>;
 }
@@ -38,6 +44,9 @@ export function defaultSettings(): Settings {
     usdToEur: DEFAULT_USD_TO_EUR,
     trackChanges: false,
     detectorUrl: DEFAULT_DETECTOR_URL,
+    detectorMode: "local",
+    cloudDetectorUrl: "",
+    aiMarkSentences: false,
     categories: Object.fromEntries(CATEGORIES.map((c) => [c.id, true])) as Record<CategoryId, boolean>,
     // Parafraseren staat standaard uit, zodat niet elke selectie tegoed kost.
     features: Object.fromEntries(FEATURES.map((f) => [f.id, f.id !== "paraphrase"])) as Record<FeatureId, boolean>,
