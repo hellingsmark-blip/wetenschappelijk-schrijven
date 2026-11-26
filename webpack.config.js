@@ -24,6 +24,10 @@ module.exports = async (env, argv) => {
         filename: "taskpane.html",
         template: "./src/taskpane/taskpane.html",
         chunks: ["taskpane"],
+        // ?<hash> achter taskpane.js en een versienummer achter taskpane.css: na een update laadt Word
+        // gegarandeerd de nieuwe code zodra de HTML (max. 10 minuten in de cache bij GitHub Pages) ververst is.
+        hash: true,
+        buildVersion: String(Date.now()),
       }),
       new CopyWebpackPlugin({
         patterns: [
