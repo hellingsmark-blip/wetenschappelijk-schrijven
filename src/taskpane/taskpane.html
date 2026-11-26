@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wetenschappelijk Schrijven</title>
+  <!-- Office.js van Microsofts CDN (vereist voor elke Office-add-in). -->
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <link rel="stylesheet" href="taskpane.css" />
+</head>
+<body>
+  <header class="topbar">
+    <label for="profileSelect" class="sr-only">Actief projectprofiel</label>
+    <select id="profileSelect" title="Actief projectprofiel"></select>
+    <span id="apiBadge" class="badge" title="Status API key"></span>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="suggesties" class="active">Suggesties</button>
+    <button role="tab" data-tab="parafraseer">Parafraseer</button>
+    <button role="tab" data-tab="tools">Tools</button>
+    <button role="tab" data-tab="aicheck">AI-check</button>
+    <button role="tab" data-tab="profiel">Profiel</button>
+    <button role="tab" data-tab="instellingen" title="Instellingen">⚙</button>
+  </nav>
+
+  <main>
+    <section id="tab-suggesties" class="panel active">
+      <div class="row">
+        <button id="scanBtn">Controleer hele document</button>
+        <button id="applyAllNotation" class="hidden">Alle notatie toepassen</button>
+      </div>
+      <div id="confirmBox" class="confirm hidden">
+        <span id="confirmText"></span>
+        <div class="row">
+          <button id="confirmYes" class="primary">Controleren</button>
+          <button id="confirmNo">Annuleren</button>
+        </div>
+      </div>
+      <p id="liveInfo" class="msg muted"></p>
+      <div class="filters" id="categoryFilters"></div>
+      <p id="sugStatus" class="msg muted"></p>
+      <div id="sugList"></div>
+    </section>
+
+    <section id="tab-parafraseer" class="panel">
+      <label class="toggle"><input type="checkbox" id="paraToggle" /> <strong>Parafraseren bij selectie</strong></label>
+      <div class="row"><button id="paraNow">Parafraseer selectie</button></div>
+      <p id="paraStatus" class="msg muted"></p>
+      <div id="paraOriginal" class="original hidden"></div>
+      <div id="paraResults"></div>
+      <button id="paraRetry" class="hidden">Opnieuw</button>
+    </section>
+
+    <section id="tab-tools" class="panel">
+      <div id="toolConfirm" class="confirm hidden">
+        <span id="toolConfirmText"></span>
+        <div class="row"><button id="toolConfirmYes" class="primary">Doorgaan</button><button id="toolConfirmNo">Annuleren</button></div>
+      </div>
+      <p id="toolMsg" class="msg"></p>
+
+      <details class="tool" open>
+        <summary>Nederlands → wetenschappelijk Engels</summary>
+        <textarea id="trInput" rows="4" placeholder="Typ of plak Nederlandse tekst, of klik op 'Gebruik selectie'."></textarea>
+        <div class="row"><button id="trUseSel">Gebruik selectie</button><button id="trGo" class="primary">Vertaal</button></div>
+        <div id="trResult"></div>
+      </details>
+
+      <details class="tool">
+        <summary>Sectie nakijken</summary>
+        <p class="muted">Alle categorieën voor de sectie waar je cursor staat (of het hele document). Resultaten verschijnen in Suggesties en als kronkels.</p>
+        <div class="row"><button id="scSection" class="primary">Huidige sectie</button><button id="scDoc">Hele document</button></div>
+      </details>
+
+      <details class="tool">
+        <summary>Begeleidersmodus</summary>
+        <p class="muted">Leest de huidige sectie kritisch zoals je begeleider: logica, onderbouwing, overgangen, structuur.</p>
+        <button id="svGo" class="primary">Lees huidige sectie</button>
+        <div id="svResult"></div>
+      </details>
+
+      <details class="tool">
+        <summary>Inkorten tot X woorden</summary>
+        <div class="row">
+          <button id="shUseSel">Gebruik selectie</button>
+          <span id="shCount" class="muted"></span>
+        </div>
+        <label class="field">Maximaal aantal woorden <input id="shMax" type="number" min="5" step="5" /></label>
+        <button id="shGo" class="primary">Inkorten</button>
+        <div id="shResult"></div>
+      </details>
+
+      <details class="tool">
+        <summary>Figuren &amp; tabellen</summary>
+        <p class="muted">Lokaal en gratis: wordt elk figuur/elke tabel genoemd, en klopt de nummering?</p>
+        <button id="ftGo">Controleer</button>
+        <div id="ftResult"></div>
+      </details>
+
+      <details class="tool">
+        <summary>Afkortingenlijst</summary>
+        <p class="muted">Lokaal en gratis: alle afkortingen, en of ze bij eerste gebruik zijn uitgeschreven.</p>
+        <button id="abGo">Verzamel afkortingen</button>
+        <div id="abResult"></div>
+      </details>
+
+      <details class="tool">
+        <summary>Termconsistentie hele document</summary>
+        <p class="muted">Zoekt verschillende vormen van dezelfde term en stelt één vorm voor.</p>
+        <button id="tcGo" class="primary">Zoek varianten</button>
+        <div id="tcResult"></div>
+      </details>
+    </section>
+
+    <section id="tab-aicheck" class="panel">
+      <p class="empty">De AI-check komt in fase 8 (na het detectorproject).</p>
+    </section>
+
+    <section id="tab-profiel" class="panel">
+      <p>Actief profiel: <strong id="profileName"></strong> <span class="muted">(wisselen via het menu bovenaan)</span></p>
+      <div class="row">
+        <button id="pfNew">Nieuw</button>
+        <button id="pfDup">Dupliceer</button>
+        <button id="pfRename">Hernoem</button>
+        <button id="pfDelete">Verwijder</button>
+      </div>
+      <div id="pfNameBox" class="confirm hidden">
+        <label class="field"><span id="pfNameLabel">Naam</span> <input id="pfNameInput" type="text" maxlength="60" /></label>
+        <div class="row"><button id="pfNameOk" class="primary">OK</button><button id="pfNameCancel">Annuleren</button></div>
+      </div>
+      <div id="pfDeleteBox" class="confirm hidden">
+        <span id="pfDeleteText"></span>
+        <div class="row"><button id="pfDeleteOk" class="primary">Verwijderen</button><button id="pfDeleteCancel">Annuleren</button></div>
+      </div>
+      <p id="pfMsg" class="msg"></p>
+
+      <h3>Algemeen</h3>
+      <label class="field">Type document
+        <select id="pfDocType">
+          <option value="verslag">Verslag</option><option value="thesis">Thesis</option>
+          <option value="artikel">Artikel</option><option value="presentatietekst">Presentatietekst</option>
+        </select>
+      </label>
+      <label class="field">Taalvariant
+        <select id="pfVariant"><option value="British">Brits Engels</option><option value="American">Amerikaans Engels</option></select>
+      </label>
+      <label class="toggle"><input type="checkbox" id="pfWe" /> "We" toegestaan</label>
+      <label class="toggle"><input type="checkbox" id="pfI" /> "I" toegestaan</label>
+      <label class="field">Vakgebied / context <textarea id="pfField" rows="3"></textarea></label>
+      <label class="field">Wensen van begeleiders of opdrachtgever <textarea id="pfWishes" rows="3"></textarea></label>
+
+      <h3>Woordenlijst</h3>
+      <p class="muted">Voorkeursterm en varianten die vermeden moeten worden (gescheiden door komma's).</p>
+      <div id="pfGlossary"></div>
+      <button id="pfGlossaryAdd" class="link">+ Term toevoegen</button>
+
+      <h3>Afkortingen</h3>
+      <div id="pfAbbr"></div>
+      <button id="pfAbbrAdd" class="link">+ Afkorting toevoegen</button>
+
+      <h3>Feitenblad</h3>
+      <p class="muted">Lege velden worden genegeerd. De technische controle vergelijkt je tekst hiermee.</p>
+      <div id="pfFacts"></div>
+      <button id="pfFactsAdd" class="link">+ Veld toevoegen</button>
+      <label class="field">Vrije tekst (definities, extra feiten) <textarea id="pfFactsText" rows="4"></textarea></label>
+
+      <div class="row">
+        <button id="pfRecheck">Opnieuw controleren met dit profiel</button>
+      </div>
+      <p id="pfSaved" class="msg muted"></p>
+
+      <h3>Negeerlijst</h3>
+      <p class="muted">Teksten waarvoor je "Negeer altijd" koos. Verwijder een item om het weer te laten melden.</p>
+      <div id="ignoreList"></div>
+
+      <h3>Back-up (export / import)</h3>
+      <div class="row">
+        <button id="pfExportOne">Exporteer dit profiel</button>
+        <button id="pfExportAll">Exporteer alle</button>
+      </div>
+      <div id="pfExportBox" class="hidden">
+        <textarea id="pfExportText" rows="6" readonly></textarea>
+        <div class="row"><button id="pfCopy">Kopiëren</button><a id="pfDownload" download="profielen.json">Download .json</a></div>
+      </div>
+      <label class="field">Importeren: kies een .json-bestand <input id="pfImportFile" type="file" accept=".json,application/json" /></label>
+      <label class="field">… of plak JSON <textarea id="pfImportText" rows="3"></textarea></label>
+      <button id="pfImport">Importeer</button>
+      <p id="pfImportMsg" class="msg"></p>
+    </section>
+
+    <section id="tab-instellingen" class="panel">
+      <h3>Claude API key</h3>
+      <p class="muted">Wordt alleen lokaal op deze computer bewaard, nooit in het document of online.</p>
+      <div class="row">
+        <input id="apiKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…" />
+      </div>
+      <div class="row">
+        <button id="saveKeyBtn" class="primary">Opslaan</button>
+        <button id="testKeyBtn">Test verbinding</button>
+        <button id="clearKeyBtn" class="link">Verwijder</button>
+      </div>
+      <p id="keyMsg" class="msg"></p>
+
+      <h3>Modellen</h3>
+      <label class="field">Live controle <select id="liveModel"></select></label>
+      <label class="field">Parafraseren, technisch, tools <select id="heavyModel"></select></label>
+
+      <h3>Budget</h3>
+      <label class="field">Limiet deze maand (€) <input id="limitInput" type="number" min="0" step="1" /></label>
+      <label class="field">Koers USD → EUR <input id="rateInput" type="number" min="0" step="0.01" /></label>
+      <p class="muted">De limiet gaat op de 1e van elke maand automatisch terug naar € 15.</p>
+
+      <h3>Categorieën</h3>
+      <div id="categoryToggles" class="toggles"></div>
+
+      <h3>Functies</h3>
+      <div id="featureToggles" class="toggles"></div>
+      <label class="toggle"><input type="checkbox" id="trackChanges" /> Wijzigingen als bijgehouden wijziging (track changes)</label>
+
+      <h3>AI-detector</h3>
+      <label class="field">Adres lokale detector <input id="detectorUrl" type="text" /></label>
+
+      <h3>Omgeving</h3>
+      <p id="envInfo" class="muted"></p>
+    </section>
+  </main>
+
+  <div id="budgetBanner" class="banner hidden">
+    <span id="budgetBannerText"></span>
+    <div id="raiseBox" class="row hidden">
+      <input id="raiseInput" type="number" min="1" step="1" />
+      <button id="raiseConfirm" class="primary">Opslaan</button>
+    </div>
+    <button id="raiseBtn">Limiet deze maand verhogen</button>
+  </div>
+
+  <footer>
+    <span id="costMeter"></span>
+    <span id="status" class="muted">Klaar</span>
+  </footer>
+</body>
+</html>
