@@ -39,16 +39,23 @@ Je hoeft daarvoor niets te laten draaien op je computer.
 
 ### Stap 1 – manifest downloaden
 
-Open in je browser `https://hellingsmark-blip.github.io/wetenschappelijk-schrijven/manifest.xml`,
-klik met rechts → **Opslaan als…** en bewaar het bestand bijvoorbeeld in `Documenten\Wetenschappelijk-Schrijven`.
+Op Windows doet manier 1 hieronder dit automatisch. Anders: open in je browser
+`https://hellingsmark-blip.github.io/wetenschappelijk-schrijven/manifest.xml`, klik met rechts → **Opslaan als…**
+en bewaar het bestand ergens buiten de projectmap (daar staat het ontwikkel-manifest met dezelfde naam).
 
 ### Stap 2a – Word op Windows
 
-**Manier 1 (makkelijkst): via het register.** Sluit Word. Open PowerShell en plak (pas het pad aan als je het
-manifest ergens anders bewaarde):
+**Manier 1 (makkelijkst): via het register.** Sluit Word. Open PowerShell en plak deze ene regel. Hij downloadt het
+manifest naar `%LOCALAPPDATA%\WetenschappelijkSchrijven\` en meldt het aan bij Word:
 
 ```powershell
-New-Item -Path "HKCU:\Software\Microsoft\Office\16.0\WEF\Developer" -Force | Out-Null; New-ItemProperty -Path "HKCU:\Software\Microsoft\Office\16.0\WEF\Developer" -Name "WetenschappelijkSchrijven" -Value "$env:USERPROFILE\Documents\Wetenschappelijk-Schrijven\manifest.xml" -PropertyType String -Force | Out-Null
+$d = "$env:LOCALAPPDATA\WetenschappelijkSchrijven"; New-Item -ItemType Directory -Force $d | Out-Null; Invoke-WebRequest -UseBasicParsing "https://hellingsmark-blip.github.io/wetenschappelijk-schrijven/manifest.xml" -OutFile "$d\manifest.xml"; New-Item -Path "HKCU:\Software\Microsoft\Office\16.0\WEF\Developer" -Force | Out-Null; New-ItemProperty -Path "HKCU:\Software\Microsoft\Office\16.0\WEF\Developer" -Name "WetenschappelijkSchrijven" -Value "$d\manifest.xml" -PropertyType String -Force | Out-Null; "Klaar: $d\manifest.xml"
+```
+
+Verwijderen kan later met:
+
+```powershell
+Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Office\16.0\WEF\Developer" -Name "WetenschappelijkSchrijven"
 ```
 
 Start Word → tabblad **Start** → **Schrijfhulp** (rechts). Zie je de knop niet: **Start → Invoegtoepassingen**
