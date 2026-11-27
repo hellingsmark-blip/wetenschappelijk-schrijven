@@ -64,7 +64,8 @@ function helpText(mode: "local" | "cloud", err: DetectorError | null): string {
       : "Controleer het adres (https://….modal.run) en het token bij ⚙ Instellingen → AI-detector, en of je Modal-app gedeployed is.";
   }
   return (
-    "<b>Detector starten:</b> dubbelklik op het startscript in je detectormap (bv. <code>start-detector.bat</code>) en wacht tot er " +
+    "<b>Heb je (nog) geen detector?</b> Dan is deze melding normaal: de AI-check werkt gewoon in de lichte modus.<br>" +
+    "<b>Wel een detector?</b> Dubbelklik op het startscript in je detectormap (bv. <code>start-detector.bat</code>) en wacht tot er " +
     "<i>running on https://localhost:8765</i> staat. Klik daarna op <b>Verbinding testen</b>.<br>" +
     "Lukt het niet? Open eenmaal <code>https://localhost:8765/health</code> in Edge. Zie je een certificaatwaarschuwing, laat de detector " +
     "dan het certificaat van <code>office-addin-dev-certs</code> gebruiken (zie docs/detector-api.md).<br>" +
